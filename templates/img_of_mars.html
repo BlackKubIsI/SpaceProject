@@ -4,7 +4,7 @@
 
 <p align="center"><h1>Images of Mars</h1></p>
 {% for item in cam %}
-    <p>{{d[item]["name"]}}</p>
+    <p>{{d[item]["name"]}} ( {{len(d[item]["img"])}} photos ) </p>
     <div id={{loop.index}} class="carousel slide" data-ride="carousel">
         <div class="carousel-inner" role="listbox">
             {% for i in d[item]["img"] %}

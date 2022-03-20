@@ -67,7 +67,7 @@ def pictures_of_the_day():
 def images_of_mars():
     nasa_interfese = NasaInterfese()
     d = nasa_interfese.get_mars_img()
-    return render_template("img_of_mars.html", cam=list(d.keys()), title="ImagesOfMars", d=d)
+    return render_template("img_of_mars.html", cam=list(d.keys()), title="ImagesOfMars", d=d, len=len)
 
 @app.route("/missions")
 def missions():
