@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block block_1 %}
+<br>
+<div class="container bg-success text-white rounded">
+    <font size="+2"><p align="center">Log in</p></font>
+    <form method="post">
+        <div>
+            {{ form.csrf_token }}
+        </div>
+        {% for field in form if field.name != 'csrf_token' %}
+            <div>
+                {% if field.name != "submit" %}
+                    <p>{{ field.label() }}</p>
+                    <p>{{ field() }}</p>
+                {% else %}
+                    <p align="center">{{ field() }}</p>
+                {% endif %}
+                {% for error in field.errors %}
+                    <div class="error">{{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endfor %}
+        <br>
+        {{message}}
+        <br>
+    </form>
+</div>
+
+{% endblock %}
