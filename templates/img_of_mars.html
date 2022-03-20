@@ -1,20 +1,43 @@
 {% extends "base.html" %}
 
 {% block block_1 %}
-
-<p align="center"><h1>Images of Mars</h1></p>
+<h1 style="text-align:center">Images of Mars</h1>
+<br>
+<form method="post">
+<div>
+    {{ form.csrf_token }}
+</div>
+{% for field in form if field.name != 'csrf_token' %}
+    <div>
+        <p style="text-align:center">{{ field() }}</p>
+        {% for error in field.errors %}
+            <div class="error">{{ error }}</div>
+        {% endfor %}
+    </div>
+{% endfor %}
+</form>
+<br>
+<div style="text-align:center" class="alert alert-dark" role="alert">
+    {{str_date}}
+</div>
+<br>
 {% for item in cam %}
-    <p>{{d[item]["name"]}} ( {{len(d[item]["img"])}} photos ) </p>
+    <p style="text-align:center" class="text-dark">{{d[item]["name"]}} ( {{len(d[item]["img"])}} photos ) </p>
     <div id={{loop.index}} class="carousel slide" data-ride="carousel">
+        <ol class="carousel-indicators">
+            {% for i in d[item]["img"] %}
+                <li data-target="#carouselExampleIndicators" data-slide-to={{loop.index}} class="active"></li>
+            {% endfor %}
+          </ol>
         <div class="carousel-inner" role="listbox">
             {% for i in d[item]["img"] %}
                 {% if loop.index == 1 %}
                     <div class="carousel-item active">
-                        <img class="d-block w-100" src={{i}}>
+                        <img class="d-block w-100" width="500" height="500" src={{i}}>
                     </div>
                 {% else %}
                     <div class="carousel-item">
-                        <img class="d-block w-100" src={{i}}>
+                        <img class="d-block w-100" width="500" height="500" src={{i}}>
                     </div>
                 {% endif %}
             {% endfor %}
@@ -30,4 +53,5 @@
           </a>
         </div>
 {% endfor %}
+<br><br>
 {% endblock %}

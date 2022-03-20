@@ -1,3 +1,4 @@
+from crypt import methods
 from flask import Flask, redirect, render_template, request
 from flask_wtf import FlaskForm
 from flask_login import current_user, LoginManager, login_required, logout_user, login_user
@@ -27,10 +28,10 @@ def load_user(user_id):
 
 
 class NasaInterfese:
-    nasa = nasapy.Nasa()
+    nasa = nasapy.Nasa(key="29bQr5rknKaUFZrD3TVmhOB2nNHrhgRpBHal0mIB")
 
-    def get_mars_img(self):
-        data = self.nasa.mars_rover(earth_date="2022-03-17")
+    def get_mars_img(self, earth_date):
+        data = self.nasa.mars_rover(earth_date=earth_date)
         d = {}
         for i in data:
             if i["camera"]["id"] not in list(d.keys()):
@@ -38,6 +39,11 @@ class NasaInterfese:
             else:
                 d[i["camera"]["id"]]["img"].append(i["img_src"])
         return d
+
+
+class DateForm(FlaskForm):
+    date = DateField("Date", validators=[DataRequired()])
+    submit = SubmitField("Search")
 
 
 class RegistrationForm(FlaskForm):
@@ -63,11 +69,18 @@ def main():
 def pictures_of_the_day():
     return "pictures_of_the_day"
 
-@app.route("/img_of_mars")
+@app.route("/img_of_mars", methods=["GET", "POST"])
 def images_of_mars():
     nasa_interfese = NasaInterfese()
-    d = nasa_interfese.get_mars_img()
-    return render_template("img_of_mars.html", cam=list(d.keys()), title="ImagesOfMars", d=d, len=len)
+    form = DateForm()
+    print(form.data)
+    if form.validate_on_submit():
+        str_date = str(form.date.data).split()[0]
+    else:
+        day_min_3 = datetime.date.today() - datetime.timedelta(days=3)
+        str_date = str(day_min_3).split()[0]
+    d = nasa_interfese.get_mars_img(earth_date=str_date)
+    return render_template("img_of_mars.html", str_date=str_date, form=form, cam=list(d.keys()), title="ImagesOfMars", d=d, len=len)
 
 @app.route("/missions")
 def missions():
