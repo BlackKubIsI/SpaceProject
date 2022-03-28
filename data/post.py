@@ -1,3 +1,5 @@
+from datetime import datetime
+from email.policy import default
 import sqlalchemy
 from sqlalchemy import orm
 from .db_session import SqlAlchemyBase
@@ -11,4 +13,4 @@ class Post(SqlAlchemyBase):
     text = sqlalchemy.Column(sqlalchemy.String, nullable=True)
     image = sqlalchemy.Column(sqlalchemy.String)
     n_like = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)
-    date_of_post = sqlalchemy.Column(sqlalchemy.DateTime, nullable=True)
+    date_of_post = sqlalchemy.Column(sqlalchemy.DateTime, nullable=True, default=datetime.now)
