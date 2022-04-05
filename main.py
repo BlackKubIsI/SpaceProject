@@ -87,7 +87,7 @@ def upload_file(user_id):
 
 @app.route("/", methods=["GET", "POST"])
 def main():
-    return render_template("test.html", title="TEST")
+    return render_template("base.html", title="TEST")
 
 
 @app.route("/user/<int:user_id>/post/add", methods=["GET", "POST"])
