@@ -34,6 +34,7 @@ def load_user(user_id):
 
 class NasaInterfese:
     nasa = nasapy.Nasa(key="29bQr5rknKaUFZrD3TVmhOB2nNHrhgRpBHal0mIB")
+
     def get_mars_img(self, earth_date):
         data = self.nasa.mars_rover(earth_date=earth_date)
         d = {}
@@ -268,7 +269,39 @@ def logout():
     return redirect("/")
 
 
+def like_of_post(id_of_user, id_of_post):
+    db_sess = db_session.create_session()
+    if len(list(db_sess.query(LikeOfPost).filter(
+            LikeOfPost.id_of_user == id_of_user, LikeOfPost.id_of_post == id_of_post))) == 0:
+        like = LikeOfPost(
+            id_of_user=id_of_user,
+            id_of_post=id_of_post
+        )
+        post = db_sess.query(Post).get(id_of_post)
+        post.n_like += 1
+        db_sess.add(like)
+        db_sess.commit()
+
+
+def like_of_comment(id_of_user, id_of_comment):
+    db_sess = db_session.create_session()
+    if len(list(db_sess.query(LikeOfComment).filter(
+            LikeOfComment.id_of_user == id_of_user, LikeOfComment.id_of_comment == id_of_comment))) == 0:
+        like = LikeOfComment(
+            id_of_user=id_of_user,
+            id_of_comment=id_of_comment
+        )
+        comment = db_sess.query(Comment).get(id_of_comment)
+        comment.n_like += 1
+        db_sess.add(like)
+        db_sess.commit()
+
+
 if __name__ == "__main__":
     db_session.global_init("db/blogs.db")
     session = db_session.create_session()
+    like_of_comment(1, 2)
+    like_of_comment(1, 2)
+    like_of_comment(1, 1)
+    like_of_post(1, 1)
     app.run(port=8080, host="127.0.0.1", debug=True)
