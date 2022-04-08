@@ -26,11 +26,6 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 
 
-# const
-MAX_CONTENT_LENGHT = 1024 * 1024
-# end const
-
-
 @login_manager.user_loader
 def load_user(user_id):
     db_sess = db_session.create_session()
@@ -84,12 +79,51 @@ def upload_file(user_id):
     f.save(secure_filename(f.filename))
     return redirect("/")
 
-
+# главная
 @app.route("/", methods=["GET", "POST"])
 def main():
     return render_template("base.html", title="TEST")
 
+# добавление комментария
+@app.route("/user/<int:user_id>/post/<int:post_id>/comment/add", methods=["GET", "POST"])
+@login_required
+def add_comment(user_id, post_id):
+    if request.method == "POST":
+        db_sess = db_session.create_session()
+        comment = Comment(
+            id_of_user=user_id,
+            id_of_post=post_id,
+            text=request.form["text"],
+            n_like=0
+        )
+        db_sess.add(comment)
+        db_sess.commit()
+        return render_template('base.html')
+    return render_template("add_comment.html", title="AddComment", inf={"user_id": user_id, "post_id": post_id})
 
+# редактирование комментария
+@app.route("/user/<int:user_id>/post/<int:post_id>/comment/red/<int:comment_id>", methods=["GET", "POST"])
+@login_required
+def red_comment(user_id, post_id, comment_id):
+    db_sess = db_session.create_session()
+    comment = db_sess.query(Comment).filter(Comment.id == comment_id).first()
+    if request.method == "POST":
+        comment.text = request.form["text"]
+        db_sess.commit()
+        return render_template('base.html')
+    return render_template("red_comment.html", title="AddComment", inf={"user_id": user_id, "post_id": post_id, "text": comment.text})
+
+# удаление комментария
+@app.route("/user/<int:user_id>/post/<int:post_id>/comment/del/<int:comment_id>", methods=["GET", "POST"])
+@login_required
+def del_comment(user_id, post_id, comment_id):
+    db_sess = db_session.create_session()
+    comment = db_sess.query(Comment).get(comment_id)
+    db_sess.delete(comment)
+    db_sess.commit()
+    return render_template("base.html", title="RedPost")
+
+# добавление поста
 @app.route("/user/<int:user_id>/post/add", methods=["GET", "POST"])
 @login_required
 def add_post(user_id):
@@ -107,7 +141,7 @@ def add_post(user_id):
         return render_template('profile.html', title=current_user.nick, img=post.image)
     return render_template("add_post.html", title="AddPost", inf={"user_id": user_id})
 
-
+# редактирование поста
 @app.route("/user/<int:user_id>/post/red/<int:post_id>", methods=["GET", "POST"])
 @login_required
 def red_post(user_id, post_id):
@@ -124,7 +158,7 @@ def red_post(user_id, post_id):
     d = {"text": post.text, "image": post.image, "post_id": post_id}
     return render_template("red_post.html", title="RedPost", values=d)
 
-
+# удаление поста
 @app.route("/user/<int:user_id>/post/del/<int:post_id>", methods=["GET", "POST"])
 @login_required
 def del_post(user_id, post_id):
@@ -139,7 +173,7 @@ def del_post(user_id, post_id):
 def pictures_of_the_day():
     return "pictures_of_the_day"
 
-
+# фотки с Марса
 @app.route("/img_of_mars", methods=["GET", "POST"])
 def images_of_mars():
     nasa_interfese = NasaInterfese()
@@ -163,7 +197,7 @@ def missions():
 def exoplanets():
     return "exoplanets"
 
-
+# вход
 @app.route("/login", methods=["GET", "POST"])
 def login():
     form = LoginForm()
@@ -178,7 +212,7 @@ def login():
                                form=form)
     return render_template('login.html', title='Log in', form=form)
 
-
+# регистрация
 @app.route("/registration", methods=["GET", "POST"])
 def registration():
     form = RegistrationForm()
@@ -205,7 +239,7 @@ def registration():
         return redirect('/login')
     return render_template('registration.html', title='Registration', form=form)
 
-
+# выход
 @app.route('/logout')
 @login_required
 def logout():
