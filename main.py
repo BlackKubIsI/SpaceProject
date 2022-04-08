@@ -80,11 +80,15 @@ def upload_file(user_id):
     return redirect("/")
 
 # главная
+
+
 @app.route("/", methods=["GET", "POST"])
 def main():
     return render_template("base.html", title="TEST")
 
 # добавление комментария
+
+
 @app.route("/user/<int:user_id>/post/<int:post_id>/comment/add", methods=["GET", "POST"])
 @login_required
 def add_comment(user_id, post_id):
@@ -102,6 +106,8 @@ def add_comment(user_id, post_id):
     return render_template("add_comment.html", title="AddComment", inf={"user_id": user_id, "post_id": post_id})
 
 # редактирование комментария
+
+
 @app.route("/user/<int:user_id>/post/<int:post_id>/comment/red/<int:comment_id>", methods=["GET", "POST"])
 @login_required
 def red_comment(user_id, post_id, comment_id):
@@ -114,6 +120,8 @@ def red_comment(user_id, post_id, comment_id):
     return render_template("red_comment.html", title="AddComment", inf={"user_id": user_id, "post_id": post_id, "text": comment.text})
 
 # удаление комментария
+
+
 @app.route("/user/<int:user_id>/post/<int:post_id>/comment/del/<int:comment_id>", methods=["GET", "POST"])
 @login_required
 def del_comment(user_id, post_id, comment_id):
@@ -124,6 +132,8 @@ def del_comment(user_id, post_id, comment_id):
     return render_template("base.html", title="RedPost")
 
 # добавление поста
+
+
 @app.route("/user/<int:user_id>/post/add", methods=["GET", "POST"])
 @login_required
 def add_post(user_id):
@@ -142,6 +152,8 @@ def add_post(user_id):
     return render_template("add_post.html", title="AddPost", inf={"user_id": user_id})
 
 # редактирование поста
+
+
 @app.route("/user/<int:user_id>/post/red/<int:post_id>", methods=["GET", "POST"])
 @login_required
 def red_post(user_id, post_id):
@@ -159,6 +171,8 @@ def red_post(user_id, post_id):
     return render_template("red_post.html", title="RedPost", values=d)
 
 # удаление поста
+
+
 @app.route("/user/<int:user_id>/post/del/<int:post_id>", methods=["GET", "POST"])
 @login_required
 def del_post(user_id, post_id):
@@ -174,6 +188,8 @@ def pictures_of_the_day():
     return "pictures_of_the_day"
 
 # фотки с Марса
+
+
 @app.route("/img_of_mars", methods=["GET", "POST"])
 def images_of_mars():
     nasa_interfese = NasaInterfese()
@@ -198,6 +214,8 @@ def exoplanets():
     return "exoplanets"
 
 # вход
+
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     form = LoginForm()
@@ -213,6 +231,8 @@ def login():
     return render_template('login.html', title='Log in', form=form)
 
 # регистрация
+
+
 @app.route("/registration", methods=["GET", "POST"])
 def registration():
     form = RegistrationForm()
@@ -240,6 +260,8 @@ def registration():
     return render_template('registration.html', title='Registration', form=form)
 
 # выход
+
+
 @app.route('/logout')
 @login_required
 def logout():
