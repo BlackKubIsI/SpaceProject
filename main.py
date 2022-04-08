@@ -34,7 +34,6 @@ def load_user(user_id):
 
 class NasaInterfese:
     nasa = nasapy.Nasa(key="29bQr5rknKaUFZrD3TVmhOB2nNHrhgRpBHal0mIB")
-
     def get_mars_img(self, earth_date):
         data = self.nasa.mars_rover(earth_date=earth_date)
         d = {}
