@@ -5,6 +5,7 @@ from flask_login import current_user, LoginManager, login_required, logout_user,
 from wtforms.validators import DataRequired
 from wtforms import StringField, BooleanField, SubmitField, IntegerField
 from wtforms import DateField, PasswordField, EmailField, TextAreaField, FileField
+from flask_restful import reqparse, abort, Api, Resource
 from werkzeug.utils import secure_filename
 
 
@@ -20,8 +21,10 @@ from data.comment import Comment
 from data.chat import Chat
 from data.message import Message
 from data import db_session
+import api_for_application
 
 app = Flask(__name__)
+api = Api(app)
 app.config["SECRET_KEY"] = "random_key"
 
 login_manager = LoginManager()
@@ -344,4 +347,12 @@ def like_of_comment(id_of_user, id_of_comment):
 if __name__ == "__main__":
     db_session.global_init("db/blogs.db")
     session = db_session.create_session()
+    api.add_resource(api_for_application.GetUsers, '/api/users')
+    api.add_resource(api_for_application.GetUser, '/api/user/<int:user_id>')
+    api.add_resource(api_for_application.GetPosts, '/api/posts')
+    api.add_resource(api_for_application.GetPost, '/api/post/<int:post_id>')
+    api.add_resource(api_for_application.GetComments, '/api/comments')
+    api.add_resource(api_for_application.GetComment, '/api/comment/<int:comment_id>')
+    api.add_resource(api_for_application.GetMessages, '/api/messages')
+    api.add_resource(api_for_application.GetMessage, '/api/message/<int:message_id>')
     app.run(port=8080, host="127.0.0.1", debug=True)
