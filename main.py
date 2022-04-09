@@ -287,7 +287,7 @@ def chat(user_1_id, user_2_id):
         db_sess.commit()
         return redirect(f"/chat/{chat[1].id_of_user_1},{chat[1].id_of_user_2}")
     inf = {"user_1": db_sess.query(User).get(chat[1].id_of_user_1),
-    "user_2": db_sess.query(User).get(chat[1].id_of_user_2)}
+           "user_2": db_sess.query(User).get(chat[1].id_of_user_2)}
     return render_template("chat.html", messages=chat[0], inf=inf, title="Chat")
 
 
@@ -300,7 +300,8 @@ def get_chat(user_1_id, user_2_id):
         chat = chats.first()
         messages_of_chat = db_sess.query(Message).filter(
             Message.id_of_chat == chat.id)
-        list_of_messages = [(i.n_of_message, i.id_of_user, i.text) for i in messages_of_chat]
+        list_of_messages = [(i.n_of_message, i.id_of_user, i.text)
+                            for i in messages_of_chat]
         return list_of_messages, chat
     else:
         chat = Chat(
