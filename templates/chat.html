@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block block_1 %}
+
+<style>
+    .layer {
+     overflow: scroll; /* Добавляем полосы прокрутки */
+     height: 750px; /* Высота блока */
+     padding: 5px; /* Поля вокруг текста */
+     border: solid 1px black; /* Параметры рамки */
+    } 
+</style>
+
+<br>
+<div class="container-fluid layer">
+    <div class="container-fluid">
+        <div style="text-align: center" class="bg-dark text-white">
+            {% if current_user.id == inf["user_1"].id %}
+                {{inf["user_2"].nick}}
+            {% else %}
+                {{inf["user_1"].nick}}
+            {% endif %}
+        </div>
+        <br>
+        <div class="bg-dark text-white">
+            <table class="table" cols="2">
+                <thead class="thead-light">
+                </thead>
+                <tbody>
+                    <tr>
+                    {% for elem in messages %}
+                        {% if current_user.id == elem[1] %}
+                            <td width="200"></td>
+                            <td width="200">
+                            <div class="alert alert-success" role="alert" style="text-align: right">
+                                {{elem[2]}}
+                            </div>
+                            </td>
+                        {% else %}
+                            <td width="200">
+                            <div class="alert alert-primary" role="alert" style="text-align: left">
+                                {{elem[2]}}
+                            </div>
+                            </td>
+                            <td width="200"></td>
+                        {% endif %}
+                    </tr>
+                    <br>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <br>
+            <div style="text-align: right; padding-right: 20px; padding-left: 20px;">
+            <form method="post">
+                <input type="text" class="form-control" name="text" placeholder="Text">
+                <br>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+            <br>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

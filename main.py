@@ -17,6 +17,8 @@ from data.post import Post
 from data.like_of_post import LikeOfPost
 from data.like_of_comment import LikeOfComment
 from data.comment import Comment
+from data.chat import Chat
+from data.message import Message
 from data import db_session
 
 app = Flask(__name__)
@@ -117,7 +119,7 @@ def red_comment(user_id, post_id, comment_id):
         comment.text = request.form["text"]
         db_sess.commit()
         return render_template('base.html')
-    return render_template("red_comment.html", title="AddComment", inf={"user_id": user_id, "post_id": post_id, "text": comment.text})
+    return render_template("red_comment.html", title="RedComment", inf={"user_id": user_id, "post_id": post_id, "text": comment.text})
 
 # удаление комментария
 
@@ -269,6 +271,47 @@ def logout():
     return redirect("/")
 
 
+# чат между двумя пользователями
+@app.route("/chat/<int:user_1_id>,<int:user_2_id>", methods=["GET", "POST"])
+def chat(user_1_id, user_2_id):
+    chat = get_chat(user_1_id, user_2_id)
+    db_sess = db_session.create_session()
+    if request.method == "POST":
+        message = Message(
+            id_of_chat=chat[1].id,
+            id_of_user=current_user.id,
+            n_of_message=len(chat[0]) + 1,
+            text=request.form["text"]
+        )
+        db_sess.add(message)
+        db_sess.commit()
+        return redirect(f"/chat/{chat[1].id_of_user_1},{chat[1].id_of_user_2}")
+    inf = {"user_1": db_sess.query(User).get(chat[1].id_of_user_1),
+    "user_2": db_sess.query(User).get(chat[1].id_of_user_2)}
+    return render_template("chat.html", messages=chat[0], inf=inf, title="Chat")
+
+
+# функция для получения чата
+def get_chat(user_1_id, user_2_id):
+    db_sess = db_session.create_session()
+    chats = db_sess.query(Chat).filter(((Chat.id_of_user_1 == user_1_id) | (Chat.id_of_user_1 == user_2_id)),
+                                       ((Chat.id_of_user_2 == user_1_id) | (Chat.id_of_user_2 == user_2_id)))
+    if len(list(chats)) > 0:
+        chat = chats.first()
+        messages_of_chat = db_sess.query(Message).filter(
+            Message.id_of_chat == chat.id)
+        list_of_messages = [(i.n_of_message, i.id_of_user, i.text) for i in messages_of_chat]
+        return list_of_messages, chat
+    else:
+        chat = Chat(
+            id_of_user_1=user_1_id,
+            id_of_user_2=user_2_id
+        )
+        db_sess.add(chat)
+        db_sess.commit()
+        return get_chat(user_1_id, user_2_id)
+
+
 def like_of_post(id_of_user, id_of_post):
     db_sess = db_session.create_session()
     if len(list(db_sess.query(LikeOfPost).filter(
@@ -300,8 +343,4 @@ def like_of_comment(id_of_user, id_of_comment):
 if __name__ == "__main__":
     db_session.global_init("db/blogs.db")
     session = db_session.create_session()
-    like_of_comment(1, 2)
-    like_of_comment(1, 2)
-    like_of_comment(1, 1)
-    like_of_post(1, 1)
     app.run(port=8080, host="127.0.0.1", debug=True)
