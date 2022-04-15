@@ -18,6 +18,16 @@
                 border-radius: 30%;
                 display: inline-block;
             }
+            .post {
+                text-align:center;
+                border: 5px solid #00005c;
+                border-width: 2px;
+                background: #ffffff;
+                padding: 10px;-
+            }
+            .line_disp{
+                display: inline-block;
+            }
             </style>
     </head>
     <body>
@@ -47,7 +57,7 @@
                     </li>
                     <pre>  </pre>
                     <li>
-                        <a class="navbar-brand text-white" href="/">{{current_user.nick}}</a>
+                        <a class="navbar-brand text-white" href="/user/1">{{current_user.nick}}</a>
                     </li>
                 {% else %}
                     <li>

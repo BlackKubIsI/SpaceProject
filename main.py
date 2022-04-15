@@ -8,7 +8,6 @@ from wtforms import DateField, PasswordField, EmailField, TextAreaField, FileFie
 from flask_restful import reqparse, abort, Api, Resource
 from werkzeug.utils import secure_filename
 
-
 import nasapy
 import base64
 import sys
@@ -75,6 +74,19 @@ class LoginForm(FlaskForm):
     submit = SubmitField("Log in")
 
 
+@app.route("/user/<int:user_id>", methods=["GET", "POST"])
+@login_required
+def user_profile(user_id):
+    return render_template("user_profile.html", title="TEST", name='BlackKub', posts={'posts': [
+        {'post_description': '123',
+         'post_photo': 'https://sun9-42.userapi.com/impf/Mp93Y8AkP7w1tgvn5W8yz8LbfJB5u-knSwmn4Q/5GOrvebr898.jpg?size'
+                       '=460x320&quality=95&sign=38e32a4abfb798f53eb5d962f656400f&type=album'},
+        {'post_description': '123',
+         'post_photo': 'https://sun9-42.userapi.com/impf/Mp93Y8AkP7w1tgvn5W8yz8LbfJB5u-knSwmn4Q/5GOrvebr898.jpg?size'
+                       '=460x320&quality=95&sign=38e32a4abfb798f53eb5d962f656400f&type=album'}
+    ]})
+
+
 @app.route('/upload/<int:user_id>', methods=["POST"])
 def upload_file(user_id):
     f = request.files['file']
@@ -84,12 +96,14 @@ def upload_file(user_id):
     f.save(secure_filename(f.filename))
     return redirect("/")
 
+
 # главная
 
 
 @app.route("/", methods=["GET", "POST"])
 def main():
     return render_template("base.html", title="TEST")
+
 
 # добавление комментария
 
@@ -110,6 +124,7 @@ def add_comment(user_id, post_id):
         return render_template('base.html')
     return render_template("add_comment.html", title="AddComment", inf={"user_id": user_id, "post_id": post_id})
 
+
 # редактирование комментария
 
 
@@ -122,7 +137,9 @@ def red_comment(user_id, post_id, comment_id):
         comment.text = request.form["text"]
         db_sess.commit()
         return render_template('base.html')
-    return render_template("red_comment.html", title="RedComment", inf={"user_id": user_id, "post_id": post_id, "text": comment.text})
+    return render_template("red_comment.html", title="RedComment",
+                           inf={"user_id": user_id, "post_id": post_id, "text": comment.text})
+
 
 # удаление комментария
 
@@ -135,6 +152,7 @@ def del_comment(user_id, post_id, comment_id):
     db_sess.delete(comment)
     db_sess.commit()
     return render_template("base.html", title="RedPost")
+
 
 # добавление поста
 
@@ -156,6 +174,7 @@ def add_post(user_id):
         return render_template('profile.html', title=current_user.nick, img=post.image)
     return render_template("add_post.html", title="AddPost", inf={"user_id": user_id})
 
+
 # редактирование поста
 
 
@@ -175,6 +194,7 @@ def red_post(user_id, post_id):
     d = {"text": post.text, "image": post.image, "post_id": post_id}
     return render_template("red_post.html", title="RedPost", values=d)
 
+
 # удаление поста
 
 
@@ -192,6 +212,7 @@ def del_post(user_id, post_id):
 def pictures_of_the_day():
     return "pictures_of_the_day"
 
+
 # фотки с Марса
 
 
@@ -206,7 +227,8 @@ def images_of_mars():
         day_min_3 = datetime.date.today() - datetime.timedelta(days=3)
         str_date = str(day_min_3).split()[0]
     d = nasa_interfese.get_mars_img(earth_date=str_date)
-    return render_template("img_of_mars.html", str_date=str_date, form=form, cam=list(d.keys()), title="ImagesOfMars", d=d, len=len)
+    return render_template("img_of_mars.html", str_date=str_date, form=form, cam=list(d.keys()), title="ImagesOfMars",
+                           d=d, len=len)
 
 
 @app.route("/missions")
@@ -217,6 +239,7 @@ def missions():
 @app.route("/exoplanets")
 def exoplanets():
     return "exoplanets"
+
 
 # вход
 
@@ -234,6 +257,7 @@ def login():
                                message="Incorrect login or password",
                                form=form)
     return render_template('login.html', title='Log in', form=form)
+
 
 # регистрация
 
@@ -263,6 +287,7 @@ def registration():
         db_sess.commit()
         return redirect('/login')
     return render_template('registration.html', title='Registration', form=form)
+
 
 # выход
 

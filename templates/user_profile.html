@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block block_1 %}
+<div id="ProfilePicture" class="line_disp">
+    <img src="https://i.pinimg.com/originals/55/7d/d6/557dd6dad96f28ec985dd44c5b8a16bf.jpg" class="img-thumbnail"
+         alt="..." width="200">
+</div>
+
+<div class="line_disp">
+    <div id="UserName" class="">
+        <h1> {{ name }} </h1>
+    </div>
+    <div id="AddPostButton" class="line_disp">
+        <button formaction="/post/add" type="button" class="btn btn-outline-secondary">New Post...</button>
+    </div>
+    <div id="DialogButton" class="line_disp">
+        <button formaction="/chat" type="button" class="btn btn-outline-secondary">Messages</button>
+    </div>
+</div>
+
+{% for i in posts['posts'] %}
+<div id="Post" class="post">
+    {{ i['post_description'] }}<br>
+    <img src="{{ i['post_photo'] }}"><br>
+    <button formaction="/comment/add" type="button" class="btn btn-outline-secondary">Add comment</button>
+    <button formaction="/like" type="button" class="btn btn-outline-secondary">Like</button>
+    <br>
+</div>
+<br>
+{% endfor %}
+
+{% endblock %}
