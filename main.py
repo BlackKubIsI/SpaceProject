@@ -77,14 +77,24 @@ class LoginForm(FlaskForm):
 @app.route("/user/<int:user_id>", methods=["GET", "POST"])
 @login_required
 def user_profile(user_id):
-    return render_template("user_profile.html", title="TEST", name='BlackKub', posts={'posts': [
-        {'post_description': '123',
-         'post_photo': 'https://sun9-42.userapi.com/impf/Mp93Y8AkP7w1tgvn5W8yz8LbfJB5u-knSwmn4Q/5GOrvebr898.jpg?size'
-                       '=460x320&quality=95&sign=38e32a4abfb798f53eb5d962f656400f&type=album'},
-        {'post_description': '123',
-         'post_photo': 'https://sun9-42.userapi.com/impf/Mp93Y8AkP7w1tgvn5W8yz8LbfJB5u-knSwmn4Q/5GOrvebr898.jpg?size'
-                       '=460x320&quality=95&sign=38e32a4abfb798f53eb5d962f656400f&type=album'}
-    ]})
+    db_sess = db_session.create_session()
+    user = db_sess.query(User).filter(User.id == user_id).first()
+    posts_ = db_sess.query(Post).filter(Post.user_id == user_id).all()
+    print(posts_)
+    local_posts = list()
+    for post in posts_[::-1]:
+        elem = dict()
+        elem['post_id'] = post.id
+        elem['post_description'] = post.text
+        elem['post_photo'] = post.image
+        elem['post_likes'] = post.n_like
+        elem['post_date'] = post.date_of_post
+        local_posts.append(elem)
+    if 'post_id' in request.args:
+        like_of_post(user_id, int(request.args['post_id']))
+    posts = dict()
+    posts['posts'] = local_posts
+    return render_template("user_profile.html", title="TEST", name=user.nick, posts=posts, user_id=user_id)
 
 
 @app.route('/upload/<int:user_id>', methods=["POST"])
@@ -104,11 +114,7 @@ def upload_file(user_id):
 def main():
     return render_template("base.html", title="TEST")
 
-
-# добавление комментария
-
-
-@app.route("/user/<int:user_id>/post/<int:post_id>/comment/add", methods=["GET", "POST"])
+@app.route("/user/<int:user_id>/post/<int:post_id>/comment", methods=["GET", "POST"])
 @login_required
 def add_comment(user_id, post_id):
     if request.method == "POST":
@@ -122,13 +128,35 @@ def add_comment(user_id, post_id):
         db_sess.add(comment)
         db_sess.commit()
         return render_template('base.html')
-    return render_template("add_comment.html", title="AddComment", inf={"user_id": user_id, "post_id": post_id})
+    return render_template("add_comment.html", title="AddComment",
+                           inf={"user_id": user_id, "post_id": post_id})
+
+
+# добавление комментария
+
+# @app.route("/user/<int:user_id>/post/<int:post_id>/comment/add", methods=["GET", "POST"])
+# @login_required
+# def add_comment(user_id, post_id):
+#     if request.method == "POST":
+#         db_sess = db_session.create_session()
+#         comment = Comment(
+#             id_of_user=user_id,
+#             id_of_post=post_id,
+#             text=request.form["text"],
+#             n_like=0
+#         )
+#         db_sess.add(comment)
+#         db_sess.commit()
+#         return render_template('base.html')
+#     return render_template("add_comment.html", title="AddComment",
+#                            inf={"user_id": user_id, "post_id": post_id})
 
 
 # редактирование комментария
 
 
-@app.route("/user/<int:user_id>/post/<int:post_id>/comment/red/<int:comment_id>", methods=["GET", "POST"])
+@app.route("/user/<int:user_id>/post/<int:post_id>/comment/red/<int:comment_id>",
+           methods=["GET", "POST"])
 @login_required
 def red_comment(user_id, post_id, comment_id):
     db_sess = db_session.create_session()
@@ -144,7 +172,8 @@ def red_comment(user_id, post_id, comment_id):
 # удаление комментария
 
 
-@app.route("/user/<int:user_id>/post/<int:post_id>/comment/del/<int:comment_id>", methods=["GET", "POST"])
+@app.route("/user/<int:user_id>/post/<int:post_id>/comment/del/<int:comment_id>",
+           methods=["GET", "POST"])
 @login_required
 def del_comment(user_id, post_id, comment_id):
     db_sess = db_session.create_session()
@@ -227,7 +256,8 @@ def images_of_mars():
         day_min_3 = datetime.date.today() - datetime.timedelta(days=3)
         str_date = str(day_min_3).split()[0]
     d = nasa_interfese.get_mars_img(earth_date=str_date)
-    return render_template("img_of_mars.html", str_date=str_date, form=form, cam=list(d.keys()), title="ImagesOfMars",
+    return render_template("img_of_mars.html", str_date=str_date, form=form, cam=list(d.keys()),
+                           title="ImagesOfMars",
                            d=d, len=len)
 
 
@@ -322,8 +352,9 @@ def chat(user_1_id, user_2_id):
 # функция для получения чата
 def get_chat(user_1_id, user_2_id):
     db_sess = db_session.create_session()
-    chats = db_sess.query(Chat).filter(((Chat.id_of_user_1 == user_1_id) | (Chat.id_of_user_1 == user_2_id)),
-                                       ((Chat.id_of_user_2 == user_1_id) | (Chat.id_of_user_2 == user_2_id)))
+    chats = db_sess.query(Chat).filter(
+        ((Chat.id_of_user_1 == user_1_id) | (Chat.id_of_user_1 == user_2_id)),
+        ((Chat.id_of_user_2 == user_1_id) | (Chat.id_of_user_2 == user_2_id)))
     if len(list(chats)) > 0:
         chat = chats.first()
         messages_of_chat = db_sess.query(Message).filter(
@@ -358,7 +389,8 @@ def like_of_post(id_of_user, id_of_post):
 def like_of_comment(id_of_user, id_of_comment):
     db_sess = db_session.create_session()
     if len(list(db_sess.query(LikeOfComment).filter(
-            LikeOfComment.id_of_user == id_of_user, LikeOfComment.id_of_comment == id_of_comment))) == 0:
+            LikeOfComment.id_of_user == id_of_user,
+            LikeOfComment.id_of_comment == id_of_comment))) == 0:
         like = LikeOfComment(
             id_of_user=id_of_user,
             id_of_comment=id_of_comment

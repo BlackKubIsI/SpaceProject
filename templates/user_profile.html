@@ -11,10 +11,10 @@
         <h1> {{ name }} </h1>
     </div>
     <div id="AddPostButton" class="line_disp">
-        <button formaction="/post/add" type="button" class="btn btn-outline-secondary">New Post...</button>
+        <a href="/user/{{ user_id }}/post/add" class="btn btn-outline-secondary">New Post...</a>
     </div>
     <div id="DialogButton" class="line_disp">
-        <button formaction="/chat" type="button" class="btn btn-outline-secondary">Messages</button>
+        <a href="/user/{{ user_id }}/chat" class="btn btn-outline-secondary">Messages</a>
     </div>
 </div>
 
@@ -22,8 +22,9 @@
 <div id="Post" class="post">
     {{ i['post_description'] }}<br>
     <img src="{{ i['post_photo'] }}"><br>
-    <button formaction="/comment/add" type="button" class="btn btn-outline-secondary">Add comment</button>
-    <button formaction="/like" type="button" class="btn btn-outline-secondary">Like</button>
+    <a href="/user/{{ user_id }}/chat" class="btn btn-outline-secondary">Add comment</a>
+    <a href="?post_id={{ i['post_id'] }}" class="btn btn-outline-secondary">Like</a>
+    {% block block_of_comments %}{% endblock %}
     <br>
 </div>
 <br>

@@ -1,0 +1,14 @@
+{% extends "user_profile.html" %}
+{% for comm in comms['users_comm'] %}
+<div id="Comment">
+    <img src="{{ comm['user_photo'] }}"><br>
+    <div class="line_disp">
+        <a href="/user/{{ user_id }}">{{ comm['user_name'] }}</a>
+        {{ comm['text'] }}
+        <br>
+    </div>
+    <a href="/like" class="btn btn-outline-secondary">Like</a>
+</div>
+<br>
+{% endfor %}
+{% endblock %}
