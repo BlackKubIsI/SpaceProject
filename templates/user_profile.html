@@ -13,13 +13,18 @@
     <div id="AddPostButton" class="line_disp">
         <a href="/user/{{ user_id }}/post/add" class="btn btn-outline-secondary">New Post...</a>
     </div>
-    <div id="DialogButton" class="line_disp">
-        <a href="/user/{{ user_id }}/chat" class="btn btn-outline-secondary">Messages</a>
-    </div>
+    {% if user_id != current_user.id %}
+        <div id="DialogButton" class="line_disp">
+            <a href="/chat/{{ user_id }},{{current_user.id}}" class="btn btn-outline-secondary">Messages</a>
+        </div>
+    {% endif %}
 </div>
 
 {% for i in posts['posts'] %}
 <div id="Post" class="post">
+    <div style="text-align: left">
+        <a href="/user/{{user_id}}">{{ title }}</a>
+    </div>
     <h4> {{ i['post_description'] }} </h4>
     <div style="text-align:right;">{{ i['post_date'] }}</div>
     <br><br>
@@ -32,7 +37,7 @@
     {% if i['isliked'] %}
     <button type="button" class="btn btn-danger">Liked {{ i['post_likes'] }}</button>
     {% else %}
-    <a href="?post_id={{ i['post_id'] }}" class="btn btn-outline-secondary">Like {{ i['post_likes'] }}</a>
+    <a href="/user/{{current_user.id}}/post/add_like/{{i['post_id']}}" class="btn btn-outline-secondary">Like {{ i['post_likes'] }}</a>
     <br>
     {% endif %}
 </div>

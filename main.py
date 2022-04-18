@@ -7,6 +7,7 @@ from wtforms import StringField, BooleanField, SubmitField, IntegerField
 from wtforms import DateField, PasswordField, EmailField, TextAreaField, FileField
 from flask_restful import reqparse, abort, Api, Resource
 from werkzeug.utils import secure_filename
+from urllib.parse import urlparse, urljoin
 
 import nasapy
 from nasapy import julian_date as jd
@@ -29,6 +30,21 @@ app.config["SECRET_KEY"] = "random_key"
 
 login_manager = LoginManager()
 login_manager.init_app(app)
+
+
+def redirect_back(default='hello', **kwargs):
+    for target in request.args.get('next'), request.referrer:
+        if not target:
+            continue
+        if is_safe_url(target):
+            return redirect(target)
+    return redirect(url_for(default, **kwargs))
+
+
+def is_safe_url(target):
+    ref_url = urlparse(request.host_url)
+    test_url = urlparse(urljoin(request.host_url, target))
+    return test_url.scheme in ('http', 'https') and ref_url.netloc == test_url.netloc
 
 
 @login_manager.user_loader
@@ -102,7 +118,7 @@ def user_profile(user_id):
         post_id = int(request.args['post_id'])
     posts = dict()
     posts['posts'] = local_posts
-    return render_template("user_profile.html", title="TEST", name=user.nick, posts=posts, user_id=user_id)
+    return render_template("user_profile.html", title=f"{user.nick}", name=user.nick, posts=posts, user_id=user_id)
 
 
 @app.route("/user/<int:user_id>/post/<int:post_id>/all_comments", methods=["GET", "POST"])
@@ -116,18 +132,18 @@ def all_comments(user_id, post_id):
     post['post_photo'] = post_.image
     post['post_likes'] = post_.n_like
     post['post_date'] = post_.date_of_post
-    print(post)
-    all_comments = db_sess.query(Comment).filter(Comment.id_of_post == post_id).all()
+    all_comments = db_sess.query(Comment).filter(
+        Comment.id_of_post == post_id).all()
     comms_ = list()
     for c in all_comments:
         elem = dict()
         elem['user_id'] = c.id_of_user
-        elem['user_name'] = db_sess.query(User).filter(User.id == c.id_of_user).first().nick
+        elem['user_name'] = db_sess.query(User).filter(
+            User.id == c.id_of_user).first().nick
         elem['text'] = c.text
         comms_.append(elem)
     comms = dict()
     comms['comms'] = comms_
-    print(comms)
     return render_template('comments_view.html', comms=comms, post=post, user_id=user_id)
 
 
@@ -146,7 +162,7 @@ def upload_file(user_id):
 
 @app.route("/", methods=["GET", "POST"])
 def main():
-    return render_template("base.html", title="TEST")
+    return render_template("base.html", title="Main")
 
 
 # добавление комментария
@@ -285,14 +301,14 @@ def julian_translator():
     form = DateForm()
     print(form.data)
     if form.validate_on_submit():
-        str_date = datetime.datetime(form.date.data, hour=1, minute=1, second=1)
+        str_date = datetime.datetime(
+            form.date.data, hour=1, minute=1, second=1)
         print(str_date)
     else:
         str_date = datetime.datetime.now()
         print(str_date)
     d = nasa_interfese.get_julian_date(earth_date=str_date)
     return render_template('julian_translator.html', str_date=str_date, form=form, jd_date=d, len=len)
-
 
 
 @app.route("/exoplanets")
@@ -401,6 +417,8 @@ def get_chat(user_1_id, user_2_id):
         return get_chat(user_1_id, user_2_id)
 
 
+@app.route("/user/<int:id_of_user>/post/add_like/<int:id_of_post>")
+@login_required
 def like_of_post(id_of_user, id_of_post):
     db_sess = db_session.create_session()
     if len(list(db_sess.query(LikeOfPost).filter(
@@ -413,9 +431,12 @@ def like_of_post(id_of_user, id_of_post):
         post.n_like += 1
         db_sess.add(like)
         db_sess.commit()
+    return redirect_back()
 
 
-def like_of_comment(id_of_user, id_of_comment):
+@app.route("/user/<int:id_of_user>/post/<int:id_of_post>/comment/add_like/<int:id_of_comment>")
+@login_required
+def like_of_comment(id_of_user, id_of_post, id_of_comment):
     db_sess = db_session.create_session()
     if len(list(db_sess.query(LikeOfComment).filter(
             LikeOfComment.id_of_user == id_of_user,
@@ -428,6 +449,7 @@ def like_of_comment(id_of_user, id_of_comment):
         comment.n_like += 1
         db_sess.add(like)
         db_sess.commit()
+    return redirect_back()
 
 
 if __name__ == "__main__":
@@ -438,7 +460,9 @@ if __name__ == "__main__":
     api.add_resource(api_for_application.GetPosts, '/api/posts')
     api.add_resource(api_for_application.GetPost, '/api/post/<int:post_id>')
     api.add_resource(api_for_application.GetComments, '/api/comments')
-    api.add_resource(api_for_application.GetComment, '/api/comment/<int:comment_id>')
+    api.add_resource(api_for_application.GetComment,
+                     '/api/comment/<int:comment_id>')
     api.add_resource(api_for_application.GetMessages, '/api/messages')
-    api.add_resource(api_for_application.GetMessage, '/api/message/<int:message_id>')
+    api.add_resource(api_for_application.GetMessage,
+                     '/api/message/<int:message_id>')
     app.run(port=8080, host="127.0.0.1", debug=True)
