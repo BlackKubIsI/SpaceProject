@@ -10,9 +10,11 @@
     <div id="UserName" class="">
         <h1> {{ name }} </h1>
     </div>
+    {% if user_id == current_user.id %}
     <div id="AddPostButton" class="line_disp">
         <a href="/user/{{ user_id }}/post/add" class="btn btn-outline-secondary">New Post...</a>
     </div>
+    {% endif %}
     {% if user_id != current_user.id %}
         <div id="DialogButton" class="line_disp">
             <a href="/chat/{{ user_id }},{{current_user.id}}" class="btn btn-outline-secondary">Messages</a>

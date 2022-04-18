@@ -8,6 +8,7 @@ from wtforms import DateField, PasswordField, EmailField, TextAreaField, FileFie
 from flask_restful import reqparse, abort, Api, Resource
 from werkzeug.utils import secure_filename
 from urllib.parse import urlparse, urljoin
+from urllib.request import urlopen
 
 import nasapy
 from nasapy import julian_date as jd
@@ -23,6 +24,8 @@ from data.chat import Chat
 from data.message import Message
 from data import db_session
 import api_for_application
+from bs4 import BeautifulSoup
+# from urllib3 import urlopen
 
 app = Flask(__name__)
 api = Api(app)
@@ -70,6 +73,9 @@ class NasaInterfese:
     def get_julian_date(self, earth_date):
         return jd(earth_date)
 
+    def get_asteroids_data(self):
+        return self.nasa.get_asteroids()["near_earth_objects"]
+
 
 class DateForm(FlaskForm):
     date = DateField("Date", validators=[DataRequired()])
@@ -92,6 +98,8 @@ class LoginForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired()])
     remember_me = BooleanField('Запомнить меня')
     submit = SubmitField("Log in")
+
+# профиль пользователя
 
 
 @app.route("/user/<int:user_id>", methods=["GET", "POST"])
@@ -119,6 +127,9 @@ def user_profile(user_id):
     posts = dict()
     posts['posts'] = local_posts
     return render_template("user_profile.html", title=f"{user.nick}", name=user.nick, posts=posts, user_id=user_id)
+
+
+# комментарии к посту
 
 
 @app.route("/user/<int:user_id>/post/<int:post_id>/all_comments", methods=["GET", "POST"])
@@ -155,6 +166,22 @@ def upload_file(user_id):
     print(base64.b64encode(f.read()))
     f.save(secure_filename(f.filename))
     return redirect("/")
+
+
+# астероиды
+
+@app.route("/asteroids", methods=["GET"])
+def asteroids():
+    data_asteroids = NasaInterfese().get_asteroids_data()
+    img_links = []
+    for g, elem in enumerate(data_asteroids):
+        img_links.append([])
+        html_doc = urlopen(f'https://yandex.ru/images/search?text=asteroid+{elem["name_limited"]}')
+        soup = BeautifulSoup(html_doc)
+        for img in soup.find_all('img')[:15]:
+            if img.get('src') != "":
+                img_links[g] += [img.get('src')]
+    return render_template("asteroids.html", asteroids=data_asteroids, images_of_asteroids=img_links, title="Asteroids")
 
 
 # главная
@@ -233,7 +260,7 @@ def add_post(user_id):
         )
         db_sess.add(post)
         db_sess.commit()
-        return render_template('profile.html', title=current_user.nick, img=post.image)
+        return redirect(f"/user/{current_user.id}")
     return render_template("add_post.html", title="AddPost", inf={"user_id": user_id})
 
 
