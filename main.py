@@ -9,6 +9,7 @@ from flask_restful import reqparse, abort, Api, Resource
 from werkzeug.utils import secure_filename
 
 import nasapy
+from nasapy import julian_date as jd
 import base64
 import sys
 import datetime
@@ -50,6 +51,9 @@ class NasaInterfese:
                 d[i["camera"]["id"]]["img"].append(i["img_src"])
         return d
 
+    def get_julian_date(self, earth_date):
+        return jd(earth_date)
+
 
 class DateForm(FlaskForm):
     date = DateField("Date", validators=[DataRequired()])
@@ -89,12 +93,42 @@ def user_profile(user_id):
         elem['post_photo'] = post.image
         elem['post_likes'] = post.n_like
         elem['post_date'] = post.date_of_post
+        elem['isliked'] = True if db_sess.query(LikeOfPost).filter(
+            (LikeOfPost.id_of_user == user_id) & (LikeOfPost.id_of_post == post.id)).first() else False
+
         local_posts.append(elem)
     if 'post_id' in request.args:
         like_of_post(user_id, int(request.args['post_id']))
+        post_id = int(request.args['post_id'])
     posts = dict()
     posts['posts'] = local_posts
     return render_template("user_profile.html", title="TEST", name=user.nick, posts=posts, user_id=user_id)
+
+
+@app.route("/user/<int:user_id>/post/<int:post_id>/all_comments", methods=["GET", "POST"])
+@login_required
+def all_comments(user_id, post_id):
+    db_sess = db_session.create_session()
+    post_ = db_sess.query(Post).filter(Post.id == post_id).first()
+    post = dict()
+    post['post_id'] = post_.id
+    post['post_description'] = post_.text
+    post['post_photo'] = post_.image
+    post['post_likes'] = post_.n_like
+    post['post_date'] = post_.date_of_post
+    print(post)
+    all_comments = db_sess.query(Comment).filter(Comment.id_of_post == post_id).all()
+    comms_ = list()
+    for c in all_comments:
+        elem = dict()
+        elem['user_id'] = c.id_of_user
+        elem['user_name'] = db_sess.query(User).filter(User.id == c.id_of_user).first().nick
+        elem['text'] = c.text
+        comms_.append(elem)
+    comms = dict()
+    comms['comms'] = comms_
+    print(comms)
+    return render_template('comments_view.html', comms=comms, post=post, user_id=user_id)
 
 
 @app.route('/upload/<int:user_id>', methods=["POST"])
@@ -114,6 +148,9 @@ def upload_file(user_id):
 def main():
     return render_template("base.html", title="TEST")
 
+
+# добавление комментария
+
 @app.route("/user/<int:user_id>/post/<int:post_id>/comment", methods=["GET", "POST"])
 @login_required
 def add_comment(user_id, post_id):
@@ -127,29 +164,9 @@ def add_comment(user_id, post_id):
         )
         db_sess.add(comment)
         db_sess.commit()
-        return render_template('base.html')
+        return redirect(f'/user/{user_id}/post/{post_id}/all_comments')
     return render_template("add_comment.html", title="AddComment",
                            inf={"user_id": user_id, "post_id": post_id})
-
-
-# добавление комментария
-
-# @app.route("/user/<int:user_id>/post/<int:post_id>/comment/add", methods=["GET", "POST"])
-# @login_required
-# def add_comment(user_id, post_id):
-#     if request.method == "POST":
-#         db_sess = db_session.create_session()
-#         comment = Comment(
-#             id_of_user=user_id,
-#             id_of_post=post_id,
-#             text=request.form["text"],
-#             n_like=0
-#         )
-#         db_sess.add(comment)
-#         db_sess.commit()
-#         return render_template('base.html')
-#     return render_template("add_comment.html", title="AddComment",
-#                            inf={"user_id": user_id, "post_id": post_id})
 
 
 # редактирование комментария
@@ -261,9 +278,21 @@ def images_of_mars():
                            d=d, len=len)
 
 
-@app.route("/missions")
-def missions():
-    return "missions"
+# перевод дат в юлианский календарь
+@app.route("/julian_translator", methods=["GET", "POST"])
+def julian_translator():
+    nasa_interfese = NasaInterfese()
+    form = DateForm()
+    print(form.data)
+    if form.validate_on_submit():
+        str_date = datetime.datetime(form.date.data, hour=1, minute=1, second=1)
+        print(str_date)
+    else:
+        str_date = datetime.datetime.now()
+        print(str_date)
+    d = nasa_interfese.get_julian_date(earth_date=str_date)
+    return render_template('julian_translator.html', str_date=str_date, form=form, jd_date=d, len=len)
+
 
 
 @app.route("/exoplanets")

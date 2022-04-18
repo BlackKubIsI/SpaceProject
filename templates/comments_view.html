@@ -1,14 +1,28 @@
-{% extends "user_profile.html" %}
-{% for comm in comms['users_comm'] %}
-<div id="Comment">
-    <img src="{{ comm['user_photo'] }}"><br>
-    <div class="line_disp">
-        <a href="/user/{{ user_id }}">{{ comm['user_name'] }}</a>
-        {{ comm['text'] }}
-        <br>
-    </div>
-    <a href="/like" class="btn btn-outline-secondary">Like</a>
+{% extends "base.html" %}
+{% block block_1 %}
+<div id="Post" class="post" style="margin: 50px;">
+    <h4> {{ post['post_description'] }} </h4>
+    <div class="line_disp" style="text-align:right;">{{ post['post_date'] }}</div>
+    <br><br>
+    <img src="data:image/jpeg;base64,{{ post['post_photo'] }}" style="width: 1000px;"><br><br>
+    <a href="/user/{{ user_id }}/post/{{ post['post_id'] }}/all_comments" class="btn btn-outline-secondary">View
+        comments</a>
+    <a href="/user/{{ user_id }}/post/{{ post['post_id'] }}/comment" class="btn btn-outline-secondary">Add
+        comment</a>
+    <a href="?post_id={{ post['post_id'] }}" class="btn btn-outline-secondary">Like {{ post['post_likes'] }}</a>
+    <br>
 </div>
 <br>
+{% for comm in comms['comms'] %}
+<div id="Comment">
+    <div class="card text-dark bg-light mb-3" style="margin: 50px;">
+        <div class="card-header"><a href="/user/{{ user_id }}"><h6>{{ comm['user_name'] }}</h6></a></div>
+        <div class="card-body">
+            <h5 class="card-title"> {{ comm['text'] }}</h5>
+            <button class="btn btn-outline-dark">Like</button>
+        </div>
+    </div>
+</div>
+
 {% endfor %}
 {% endblock %}

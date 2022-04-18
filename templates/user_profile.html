@@ -20,12 +20,21 @@
 
 {% for i in posts['posts'] %}
 <div id="Post" class="post">
-    {{ i['post_description'] }}<br>
-    <img src="{{ i['post_photo'] }}"><br>
-    <a href="/user/{{ user_id }}/chat" class="btn btn-outline-secondary">Add comment</a>
-    <a href="?post_id={{ i['post_id'] }}" class="btn btn-outline-secondary">Like</a>
-    {% block block_of_comments %}{% endblock %}
+    <h4> {{ i['post_description'] }} </h4>
+    <div style="text-align:right;">{{ i['post_date'] }}</div>
+    <br><br>
+    <img src="data:image/jpeg;base64,{{ i['post_photo'] }}" style="width: 1000px;"><br><br>
+
+    <a href="/user/{{ user_id }}/post/{{ i['post_id'] }}/all_comments" class="btn btn-outline-secondary">View
+        comments</a>
+    <a href="/user/{{ user_id }}/post/{{ i['post_id'] }}/comment" class="btn btn-outline-secondary">Add
+        comment</a>
+    {% if i['isliked'] %}
+    <button type="button" class="btn btn-danger">Liked {{ i['post_likes'] }}</button>
+    {% else %}
+    <a href="?post_id={{ i['post_id'] }}" class="btn btn-outline-secondary">Like {{ i['post_likes'] }}</a>
     <br>
+    {% endif %}
 </div>
 <br>
 {% endfor %}
