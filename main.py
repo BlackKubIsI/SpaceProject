@@ -13,7 +13,7 @@ from urllib.request import urlopen
 import nasapy
 from nasapy import julian_date as jd
 import base64
-import sys
+import sys, os
 import datetime
 from data.user import User
 from data.post import Post
@@ -25,7 +25,6 @@ from data.message import Message
 from data import db_session
 import api_for_application
 from bs4 import BeautifulSoup
-# from urllib3 import urlopen
 
 app = Flask(__name__)
 api = Api(app)
@@ -176,7 +175,8 @@ def asteroids():
     img_links = []
     for g, elem in enumerate(data_asteroids):
         img_links.append([])
-        html_doc = urlopen(f'https://yandex.ru/images/search?text=asteroid+{elem["name_limited"]}')
+        html_doc = urlopen(
+            f'https://yandex.ru/images/search?text=asteroid+{elem["name_limited"]}')
         soup = BeautifulSoup(html_doc)
         for img in soup.find_all('img')[:15]:
             if img.get('src') != "":
@@ -492,4 +492,5 @@ if __name__ == "__main__":
     api.add_resource(api_for_application.GetMessages, '/api/messages')
     api.add_resource(api_for_application.GetMessage,
                      '/api/message/<int:message_id>')
-    app.run(port=8080, host="127.0.0.1", debug=True)
+    port = int(os.environ.get("PORT", 8080))
+    app.run(port=port, host="0.0.0.0", debug=True)
