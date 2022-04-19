@@ -46,9 +46,11 @@
         <li>
             <a class="navbar-brand" href="/julian_translator">Julian translator</a>
         </li>
-        <li>
-            <a class="navbar-brand" href="/messages/{{ current_user.id }}">Messenger</a>
-        </li>
+        {% if current_user.is_authenticated %}
+            <li>
+                <a class="navbar-brand" href="/messages/{{ current_user.id }}">Messenger</a>
+            </li>
+        {% endif %}
         <li>
             <a class="navbar-brand" href="/asteroids">Asteroids</a>
         </li>

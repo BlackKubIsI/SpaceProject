@@ -425,13 +425,16 @@ def logout():
 @login_required
 def messenger(user_id):
     db_sess = db_session.create_session()
-    messages = db_sess.query(Chat).filter(Chat.id_of_user_1 == user_id).all()
+    messages = db_sess.query(Chat).filter((Chat.id_of_user_1 == user_id) | (Chat.id_of_user_2 == user_id)).all()
     local_messages = list()
     for chat in messages:
         elem = dict()
         elem['user1_id'] = chat.id_of_user_1
         elem['user2_id'] = chat.id_of_user_2
-        elem['user2_nick'] = db_sess.query(User).filter((User.id == chat.id_of_user_2 ) | (User.id == chat.id_of_user_1)).first().nick
+        if current_user.id == db_sess.query(User).filter((User.id == chat.id_of_user_2 ) | (User.id == chat.id_of_user_1)).all()[1].id:
+            elem['user2_nick'] = db_sess.query(User).filter((User.id == chat.id_of_user_2 ) | (User.id == chat.id_of_user_1)).all()[0].nick
+        else:
+            elem['user2_nick'] = db_sess.query(User).filter((User.id == chat.id_of_user_2 ) | (User.id == chat.id_of_user_1)).all()[1].nick
         r = db_sess.query(Message).filter(
             Message.id_of_chat == chat.id).all()
         if not r:
