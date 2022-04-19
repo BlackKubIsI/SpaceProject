@@ -18,8 +18,13 @@
     <!--    {% if i['isliked'] %}-->
     <!--    <button type="button" class="btn btn-danger">Liked {{ i['post_likes'] }}</button>-->
     <!--    {% else %}-->
-    <a class="btn btn-outline-secondary">Like {{
-        i['post_likes'] }}</a>
+    {% if current_user.is_authenticated %}
+        <a href="/user/{{current_user.id}}/post/add_like/{{i['post_id']}}" class="btn btn-outline-secondary">Like {{
+            i['post_likes'] }}</a>
+        
+    {% endif %}
+    <a href="/user/{{ current_user.id }}/post/{{ i['post_id'] }}/all_comments" class="btn btn-outline-secondary">View
+        comments</a>
     <!--    <br>-->
     <!--    {% endif %}-->
 </div>
