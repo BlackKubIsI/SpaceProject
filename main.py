@@ -10,6 +10,8 @@ from werkzeug.utils import secure_filename
 from urllib.parse import urlparse, urljoin
 from urllib.request import urlopen
 
+from gtts import gTTS
+from googletrans import Translator
 import nasapy
 from nasapy import julian_date as jd
 import base64
@@ -33,6 +35,15 @@ app.config["SECRET_KEY"] = "random_key"
 
 login_manager = LoginManager()
 login_manager.init_app(app)
+
+
+def audio_and_transl(text, name_of_file):
+    if text + ".mp3" not in os.listdir("./static/audio"):
+        translator = Translator()
+        result = translator.translate(text, src='en', dest="ru").text
+
+        tts = gTTS(result, lang='ru')
+        tts.save(f'static/audio/{name_of_file}.mp3')
 
 
 def redirect_back(default='hello', **kwargs):
@@ -338,7 +349,8 @@ def pictures_of_the_month():
     psotd, local_pcts = dict(), list()
     # для тестов запрос сокращается тк у nasa ограниченное количество запросов в час
     for i in range(int(datetime.datetime.today().strftime("%d")) - 15):
-        apod = nasa_interface.get_picture_of_the_day((d - datetime.timedelta(i)).strftime("%Y-%m-%d"))
+        apod = nasa_interface.get_picture_of_the_day(
+            (d - datetime.timedelta(i)).strftime("%Y-%m-%d"))
         print(apod)
         local_pcts.append(apod)
     psotd['pctrs'] = local_pcts
@@ -351,7 +363,6 @@ def pictures_of_the_month():
 def picture_of_the_day(picture_date):
     nasa_interface = NasaInterfese()
     potd = nasa_interface.get_picture_of_the_day(picture_date)
-    print(potd)
     return render_template('picture_otd_view.html', potd=potd)
 
 
@@ -366,6 +377,7 @@ def pictures_of_the_day():
         picture_date = str(datetime.date.today())
     print(picture_date)
     potd = nasa_interface.get_picture_of_the_day(picture_date)
+    audio_and_transl(potd['explanation'], potd['date'])
     print(potd)
     return render_template('pictures_of_the_day.html', potd=potd, form=form,
                            title="ImagesOfMars", d=picture_date, len=len)
