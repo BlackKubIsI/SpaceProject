@@ -36,7 +36,14 @@
 {% for i in posts['posts'] %}
 <div id="Post" class="post">
     <div style="text-align: left">
-        <a href="/user/{{user_id}}">{{ title }}</a>
+        <a href="/user/{{user_id}}"><h3>{{ title }}</h3></a>
+        {% if user_id == current_user.id %}
+
+        <a href="/user/{{user_id}}/post/del/{{ i['post_id'] }}"><span class="badge rounded-pill bg-danger"
+                                                                      style="float:right;">Delete</span></a>
+        <a href="/user/{{user_id}}/post/red/{{ i['post_id'] }}"><span class="badge rounded-pill bg-secondary"
+                                                                      style="float:right;">Edit</span></a>
+        {% endif %}
     </div>
     <h4> {{ i['post_description'] }} </h4>
     <div style="text-align:right;">{{ i['post_date'] }}</div>

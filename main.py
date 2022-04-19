@@ -222,12 +222,7 @@ def main():
         elem['post_photo'] = post.image
         elem['post_likes'] = post.n_like
         elem['post_date'] = post.date_of_post
-        # elem['isliked'] = True if db_sess.query(LikeOfPost).filter(
-        #     (LikeOfPost.id_of_user == user_id) & (LikeOfPost.id_of_post == post.id)).first() else False
         local_posts.append(elem)
-    # if 'post_id' in request.args:
-    #     like_of_post(user_id, int(request.args['post_id']))
-    #     post_id = int(request.args['post_id'])
     posts = dict()
     posts['posts'] = local_posts
     return render_template("main.html", title="News", posts=posts)
@@ -265,7 +260,7 @@ def red_comment(user_id, post_id, comment_id):
     if request.method == "POST":
         comment.text = request.form["text"]
         db_sess.commit()
-        return render_template('base.html')
+        return redirect_back()
     return render_template("red_comment.html", title="RedComment",
                            inf={"user_id": user_id, "post_id": post_id, "text": comment.text})
 
@@ -281,7 +276,7 @@ def del_comment(user_id, post_id, comment_id):
     comment = db_sess.query(Comment).get(comment_id)
     db_sess.delete(comment)
     db_sess.commit()
-    return render_template("base.html", title="RedPost")
+    return redirect_back()
 
 
 # добавление поста
@@ -320,7 +315,7 @@ def red_post(user_id, post_id):
             post.image = img
         post.text = request.form["text"]
         db_sess.commit()
-        return render_template('profile.html', title=current_user.nick, img=post.image)
+        return redirect(f"/user/{current_user.id}")
     d = {"text": post.text, "image": post.image, "post_id": post_id}
     return render_template("red_post.html", title="RedPost", values=d)
 
@@ -335,7 +330,7 @@ def del_post(user_id, post_id):
     post = db_sess.query(Post).get(post_id)
     db_sess.delete(post)
     db_sess.commit()
-    return render_template("base.html", title="RedPost")
+    return redirect(f"/user/{current_user.id}")
 
 
 # картины месяца
@@ -419,10 +414,6 @@ def julian_translator():
     return render_template('julian_translator.html', str_date=str_date, form=form, jd_date_searched=d_serched,
                            jd_date_today=d_today, len=len)
 
-
-@app.route("/exoplanets")
-def exoplanets():
-    return "exoplanets"
 
 
 # вход

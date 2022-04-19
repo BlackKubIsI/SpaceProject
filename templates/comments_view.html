@@ -16,10 +16,20 @@
 {% for comm in comms['comms'] %}
 <div id="Comment">
     <div class="card text-dark bg-light mb-3" style="margin: 50px;">
-        <div class="card-header"><a href="/user/{{ user_id }}"><h6>{{ comm['user_name'] }}</h6></a></div>
-        <div class="card-body">
+        <div class="card-header">
+            <a href="/user/{{ user_id }}"><h6>{{ comm['user_name'] }}</h6></a>
+            {% if comm['user_id'] == current_user.id %}
+            <a href="/user/{{ user_id }}/post/{{ post['post_id'] }}/comment/red/{{comm['id']}}"><span class="badge rounded-pill bg-secondary">Edit</span></a>
+            <a href="/user/{{ user_id }}/post/{{ post['post_id'] }}/comment/del/{{comm['id']}}"><span class="badge rounded-pill bg-danger">Delete</span></a>
+            {% endif %}
             <h5 class="card-title"> {{ comm['text'] }}</h5>
-            <button class="btn btn-outline-dark">Like</button>
+            {% if comm['isliked'] %}
+            <button type="button" class="btn btn-danger">Liked {{ comm['n_like'] }}</button>
+            {% else %}
+            <a href="/user/{{ user_id }}/post/{{ post['post_id'] }}/comment/add_like/{{ comm['id'] }}"
+               class="btn btn-outline-secondary">Like {{ comm['n_like'] }}</a>
+            <br>
+            {% endif %}
         </div>
     </div>
 </div>
