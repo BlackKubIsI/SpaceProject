@@ -1,0 +1,13 @@
+
+{% extends "base.html" %}
+
+{% block block_1 %}
+<div class="post">
+        <h4> {{ potd['explanation'] }} </h4>
+        <div style="text-align:right;">{{ potd['date'] }}</div>
+        <br><br>
+        <img src="{{ potd['hdurl'] }}" style="width: 1000px;"><br><br>
+</div>
+
+
+{% endblock %}

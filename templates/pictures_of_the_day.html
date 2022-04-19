@@ -1,0 +1,29 @@
+
+{% extends "base.html" %}
+
+{% block block_1 %}
+<h1 style="text-align:center">Pictures of the day</h1>
+<br>
+<form method="post">
+<div>
+    {{ form.csrf_token }}
+</div>
+{% for field in form if field.name != 'csrf_token' %}
+    <div>
+        <p style="text-align:center">{{ field() }}</p>
+        {% for error in field.errors %}
+            <div class="error">{{ error }}</div>
+        {% endfor %}
+    </div>
+{% endfor %}
+</form>
+<div class="post">
+        <h4> {{ potd['explanation'] }} </h4>
+        <div style="text-align:right;">{{ potd['date'] }}</div>
+        <br><br>
+        <img src="{{ potd['hdurl'] }}" style="width: 1000px;"><br><br>
+
+    </div>
+
+
+{% endblock %}

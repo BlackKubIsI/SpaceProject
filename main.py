@@ -76,6 +76,9 @@ class NasaInterfese:
     def get_asteroids_data(self):
         return self.nasa.get_asteroids()["near_earth_objects"]
 
+    def get_picture_of_the_day(self, date):
+        return self.nasa.picture_of_the_day(date, hd=True)
+
 
 class DateForm(FlaskForm):
     date = DateField("Date", validators=[DataRequired()])
@@ -98,6 +101,7 @@ class LoginForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired()])
     remember_me = BooleanField('Запомнить меня')
     submit = SubmitField("Log in")
+
 
 # профиль пользователя
 
@@ -128,6 +132,7 @@ def user_profile(user_id):
     return render_template("user_profile.html", title=f"{user.nick}", name=user.nick, about=user.about,
                            address=user.address, birthday=user.birthday, reg_date=user.registration_date, posts=posts,
                            user_id=user_id)
+
 
 # комментарии к посту
 
@@ -322,9 +327,48 @@ def del_post(user_id, post_id):
     return render_template("base.html", title="RedPost")
 
 
-@app.route("/pictures_of_the_day")
+# картины месяца
+# по изначальной задумке, тут должен получатся список изображений,
+# а потом это всё должно выводится в сеточку, в которой,
+# при клике на какое-то из них открывается полная информация
+@app.route("/pictures_of_the_month", methods=["GET", "POST"])
+def pictures_of_the_month():
+    nasa_interface = NasaInterfese()
+    d = datetime.datetime.today()
+    psotd, local_pcts = dict(), list()
+    # для тестов запрос сокращается тк у nasa ограниченное количество запросов в час
+    for i in range(int(datetime.datetime.today().strftime("%d")) - 15):
+        apod = nasa_interface.get_picture_of_the_day((d - datetime.timedelta(i)).strftime("%Y-%m-%d"))
+        print(apod)
+        local_pcts.append(apod)
+    psotd['pctrs'] = local_pcts
+    print(psotd)
+    return render_template('pictures_of_the_month.html', psotd=psotd)
+
+
+# картинка дня (при клике на изображение) - полная информация
+@app.route("/picture_of_the_day/<picture_date>", methods=["GET", "POST"])
+def picture_of_the_day(picture_date):
+    nasa_interface = NasaInterfese()
+    potd = nasa_interface.get_picture_of_the_day(picture_date)
+    print(potd)
+    return render_template('picture_otd_view.html', potd=potd)
+
+
+# упрощенный вариант с формой
+@app.route("/pictures_of_the_day", methods=["GET", "POST"])
 def pictures_of_the_day():
-    return "pictures_of_the_day"
+    nasa_interface = NasaInterfese()
+    form = DateForm()
+    if form.validate_on_submit():
+        picture_date = str(form.date.data)
+    else:
+        picture_date = str(datetime.date.today())
+    print(picture_date)
+    potd = nasa_interface.get_picture_of_the_day(picture_date)
+    print(potd)
+    return render_template('pictures_of_the_day.html', potd=potd, form=form,
+                           title="ImagesOfMars", d=picture_date, len=len)
 
 
 # фотки с Марса
@@ -360,7 +404,8 @@ def julian_translator():
         year=int(str_date[0]), month=int(str_date[1]), day=int(str_date[2]))
     d_today = nasa_interfese.get_julian_date(
         year=int(date_today[0]), month=int(date_today[1]), day=int(date_today[2]))
-    return render_template('julian_translator.html', str_date=str_date, form=form, jd_date_searched=d_serched, jd_date_today=d_today, len=len)
+    return render_template('julian_translator.html', str_date=str_date, form=form, jd_date_searched=d_serched,
+                           jd_date_today=d_today, len=len)
 
 
 @app.route("/exoplanets")
@@ -425,6 +470,7 @@ def logout():
     logout_user()
     return redirect("/")
 
+
 # все чаты
 
 
@@ -439,7 +485,8 @@ def messenger(user_id):
         elem = dict()
         elem['user1_id'] = chat.id_of_user_1
         elem['user2_id'] = chat.id_of_user_2
-        if current_user.id == db_sess.query(User).filter((User.id == chat.id_of_user_2) | (User.id == chat.id_of_user_1)).all()[1].id:
+        if current_user.id == \
+                db_sess.query(User).filter((User.id == chat.id_of_user_2) | (User.id == chat.id_of_user_1)).all()[1].id:
             elem['user2_nick'] = db_sess.query(User).filter(
                 (User.id == chat.id_of_user_2) | (User.id == chat.id_of_user_1)).all()[0].nick
         else:

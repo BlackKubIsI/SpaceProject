@@ -28,6 +28,26 @@
             .line_disp{
                 display: inline-block;
             }
+                        /*общие настройки сетки*/
+            .grid {
+              /*рисуем зелёные рамки*/
+              border: 5px solid #d1e231;
+              /*подключаем сетку*/
+              display: grid;
+              /*формируем по 5 одинаковых строк и 6 столбцов*/
+              grid-template-columns: repeat(5, 200px);
+              grid-template-rows: repeat(6, 200px);
+            }
+
+            /*внешний вид ячеек*/
+            .grid > * {
+              /*фоновый цвет*/
+              background-color: #ffffff;
+              /*скругление углов*/
+              border-radius: 5px;
+              /*расстояние от одной границы ячейки до другой*/
+              margin: 1px;
+            }
 
     </style>
 </head>

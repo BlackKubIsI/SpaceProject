@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block block_1 %}
+<h1 style="text-align:center">Pictures of the day</h1>
+<br>
+<div class="grid">
+    {% for item in psotd['pctrs'] %}
+    <div>
+<!--        <h1>{{ item['date'] }}</h1>-->
+<!--        <h1>{{ item['copyright'] }}</h1>-->
+<!--        <h1>{{ item['title'] }}</h1>-->
+        <a href="/picture_of_the_day/{{ item['date'] }}">  <img src=" {{ item['hdurl'] }} " style="width:200px; height: 200px;"></a>
+<!--        <h4>{{ item['explanation'] }}</h4>-->
+    </div>
+    {% endfor %}
+</div>
+
+{% endblock %}
