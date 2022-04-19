@@ -13,7 +13,8 @@ from urllib.request import urlopen
 import nasapy
 from nasapy import julian_date as jd
 import base64
-import sys, os
+import sys
+import os
 import datetime
 from _data.user import User
 from _data.post import Post
@@ -196,8 +197,10 @@ def main():
     local_posts = list()
     for post in posts_[::-1]:
         elem = dict()
-        elem['user_name'] = db_sess.query(User).filter(User.id == post.user_id).first().nick
-        elem['user_id'] = db_sess.query(User).filter(User.id == post.user_id).first().id
+        elem['user_name'] = db_sess.query(User).filter(
+            User.id == post.user_id).first().nick
+        elem['user_id'] = db_sess.query(User).filter(
+            User.id == post.user_id).first().id
         elem['post_id'] = post.id
         elem['post_description'] = post.text
         elem['post_photo'] = post.image
@@ -353,8 +356,10 @@ def julian_translator():
         str_date = str(form.date.data).split('-')
     else:
         str_date = date_today
-    d_serched = nasa_interfese.get_julian_date(year=int(str_date[0]), month=int(str_date[1]), day=int(str_date[2]))
-    d_today = nasa_interfese.get_julian_date(year=int(date_today[0]), month=int(date_today[1]), day=int(date_today[2]))
+    d_serched = nasa_interfese.get_julian_date(
+        year=int(str_date[0]), month=int(str_date[1]), day=int(str_date[2]))
+    d_today = nasa_interfese.get_julian_date(
+        year=int(date_today[0]), month=int(date_today[1]), day=int(date_today[2]))
     return render_template('julian_translator.html', str_date=str_date, form=form, jd_date_searched=d_serched, jd_date_today=d_today, len=len)
 
 
@@ -421,20 +426,25 @@ def logout():
     return redirect("/")
 
 # все чаты
+
+
 @app.route("/messages/<int:user_id>", methods=["GET", "POST"])
 @login_required
 def messenger(user_id):
     db_sess = db_session.create_session()
-    messages = db_sess.query(Chat).filter((Chat.id_of_user_1 == user_id) | (Chat.id_of_user_2 == user_id)).all()
+    messages = db_sess.query(Chat).filter(
+        (Chat.id_of_user_1 == user_id) | (Chat.id_of_user_2 == user_id)).all()
     local_messages = list()
     for chat in messages:
         elem = dict()
         elem['user1_id'] = chat.id_of_user_1
         elem['user2_id'] = chat.id_of_user_2
-        if current_user.id == db_sess.query(User).filter((User.id == chat.id_of_user_2 ) | (User.id == chat.id_of_user_1)).all()[1].id:
-            elem['user2_nick'] = db_sess.query(User).filter((User.id == chat.id_of_user_2 ) | (User.id == chat.id_of_user_1)).all()[0].nick
+        if current_user.id == db_sess.query(User).filter((User.id == chat.id_of_user_2) | (User.id == chat.id_of_user_1)).all()[1].id:
+            elem['user2_nick'] = db_sess.query(User).filter(
+                (User.id == chat.id_of_user_2) | (User.id == chat.id_of_user_1)).all()[0].nick
         else:
-            elem['user2_nick'] = db_sess.query(User).filter((User.id == chat.id_of_user_2 ) | (User.id == chat.id_of_user_1)).all()[1].nick
+            elem['user2_nick'] = db_sess.query(User).filter(
+                (User.id == chat.id_of_user_2) | (User.id == chat.id_of_user_1)).all()[1].nick
         r = db_sess.query(Message).filter(
             Message.id_of_chat == chat.id).all()
         if not r:
