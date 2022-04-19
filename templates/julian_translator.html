@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block block_1 %}
-<img src="https://media.rawg.io/media/resize/1280/-/screenshots/e2b/e2b998a901d3c8bdb0291e4afcfa2a06.jpg" style="margin:50px;">
-<h1>The Julian day is the continuous count of days since the beginning of the Julian period, and is used primarily by astronomers, and in software for easily calculating elapsed days between two events (e.g. food production date and sell by date).</h1>
+<img src="https://pm1.narvii.com/6752/f1cd7370a1ae135dc9da314058315f2693120686v2_hq.jpg" style="float:right;">
+<h3>The Julian day is the continuous count of days since the beginning of the Julian period, and is used primarily by astronomers, and in software for easily calculating elapsed days between two events (e.g. food production date and sell by date).</h3>
 <form method="post">
 <div>
     {{ form.csrf_token }}
@@ -15,7 +15,12 @@
     </div>
 {% endfor %}
 </form>
-<br>
-<h3>{{ jd_date }}</h3>
+<br><br><br>
+<div class="alert alert-success" role="alert" style="width: 400px; margin: 30px;">
+  <h4 class="alert-heading">Result:</h4>
+  <p>{{ jd_date_searched }} JD</p>
+  <hr>
+  <p class="mb-0"> Btw, today: {{ jd_date_today }} JD</p>
+</div>
 
 {% endblock %}

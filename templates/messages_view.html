@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block block_1 %}
+{% if messages['messages'] == []%}
+<h1> Nobody here..</h1>
+{% else %}
+{% for i in messages['messages'] %}
+    <div class="card" style="margin: 20px">
+        <div class="card-header">
+            <a href="/chat/{{ i['user1_id'] }},{{ i['user2_id'] }}"> {{ i['user2_nick'] }}</a>
+        </div>
+        <div class="card-body">
+            <blockquote class="blockquote mb-0">
+                <p> {{ i['last_message_writer'] }}: </p>
+                <footer class="blockquote-footer"> {{ i['last_message'] }}</footer>
+            </blockquote>
+        </div>
+    </div>
+{% endfor %}
+{% endif %}
+{% endblock %}

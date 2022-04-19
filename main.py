@@ -1,4 +1,4 @@
-from flask import Flask, redirect, render_template, request
+from flask import Flask, redirect, render_template, request, url_for
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileAllowed
 from flask_login import current_user, LoginManager, login_required, logout_user, login_user
@@ -15,14 +15,14 @@ from nasapy import julian_date as jd
 import base64
 import sys
 import datetime
-from data.user import User
-from data.post import Post
-from data.like_of_post import LikeOfPost
-from data.like_of_comment import LikeOfComment
-from data.comment import Comment
-from data.chat import Chat
-from data.message import Message
-from data import db_session
+from _data.user import User
+from _data.post import Post
+from _data.like_of_post import LikeOfPost
+from _data.like_of_comment import LikeOfComment
+from _data.comment import Comment
+from _data.chat import Chat
+from _data.message import Message
+from _data import db_session
 import api_for_application
 from bs4 import BeautifulSoup
 # from urllib3 import urlopen
@@ -70,8 +70,8 @@ class NasaInterfese:
                 d[i["camera"]["id"]]["img"].append(i["img_src"])
         return d
 
-    def get_julian_date(self, earth_date):
-        return jd(earth_date)
+    def get_julian_date(self, year, month, day):
+        return jd(year=year, month=month, day=day)
 
     def get_asteroids_data(self):
         return self.nasa.get_asteroids()["near_earth_objects"]
@@ -108,7 +108,6 @@ def user_profile(user_id):
     db_sess = db_session.create_session()
     user = db_sess.query(User).filter(User.id == user_id).first()
     posts_ = db_sess.query(Post).filter(Post.user_id == user_id).all()
-    print(posts_)
     local_posts = list()
     for post in posts_[::-1]:
         elem = dict()
@@ -126,8 +125,9 @@ def user_profile(user_id):
         post_id = int(request.args['post_id'])
     posts = dict()
     posts['posts'] = local_posts
-    return render_template("user_profile.html", title=f"{user.nick}", name=user.nick, posts=posts, user_id=user_id)
-
+    return render_template("user_profile.html", title=f"{user.nick}", name=user.nick, about=user.about,
+                           address=user.address, birthday=user.birthday, reg_date=user.registration_date, posts=posts,
+                           user_id=user_id)
 
 # комментарии к посту
 
@@ -143,6 +143,8 @@ def all_comments(user_id, post_id):
     post['post_photo'] = post_.image
     post['post_likes'] = post_.n_like
     post['post_date'] = post_.date_of_post
+    post['isliked'] = True if db_sess.query(LikeOfPost).filter(
+        (LikeOfPost.id_of_user == user_id) & (LikeOfPost.id_of_post == post_.id)).first() else False
     all_comments = db_sess.query(Comment).filter(
         Comment.id_of_post == post_id).all()
     comms_ = list()
@@ -189,7 +191,27 @@ def asteroids():
 
 @app.route("/", methods=["GET", "POST"])
 def main():
-    return render_template("base.html", title="Main")
+    db_sess = db_session.create_session()
+    posts_ = db_sess.query(Post).all()
+    local_posts = list()
+    for post in posts_[::-1]:
+        elem = dict()
+        elem['user_name'] = db_sess.query(User).filter(User.id == post.user_id).first().nick
+        elem['user_id'] = db_sess.query(User).filter(User.id == post.user_id).first().id
+        elem['post_id'] = post.id
+        elem['post_description'] = post.text
+        elem['post_photo'] = post.image
+        elem['post_likes'] = post.n_like
+        elem['post_date'] = post.date_of_post
+        # elem['isliked'] = True if db_sess.query(LikeOfPost).filter(
+        #     (LikeOfPost.id_of_user == user_id) & (LikeOfPost.id_of_post == post.id)).first() else False
+        local_posts.append(elem)
+    # if 'post_id' in request.args:
+    #     like_of_post(user_id, int(request.args['post_id']))
+    #     post_id = int(request.args['post_id'])
+    posts = dict()
+    posts['posts'] = local_posts
+    return render_template("main.html", title="News", posts=posts)
 
 
 # добавление комментария
@@ -326,16 +348,14 @@ def images_of_mars():
 def julian_translator():
     nasa_interfese = NasaInterfese()
     form = DateForm()
-    print(form.data)
+    date_today = str(datetime.date.today()).split('-')
     if form.validate_on_submit():
-        str_date = datetime.datetime(
-            form.date.data, hour=1, minute=1, second=1)
-        print(str_date)
+        str_date = str(form.date.data).split('-')
     else:
-        str_date = datetime.datetime.now()
-        print(str_date)
-    d = nasa_interfese.get_julian_date(earth_date=str_date)
-    return render_template('julian_translator.html', str_date=str_date, form=form, jd_date=d, len=len)
+        str_date = date_today
+    d_serched = nasa_interfese.get_julian_date(year=int(str_date[0]), month=int(str_date[1]), day=int(str_date[2]))
+    d_today = nasa_interfese.get_julian_date(year=int(date_today[0]), month=int(date_today[1]), day=int(date_today[2]))
+    return render_template('julian_translator.html', str_date=str_date, form=form, jd_date_searched=d_serched, jd_date_today=d_today, len=len)
 
 
 @app.route("/exoplanets")
@@ -399,6 +419,33 @@ def registration():
 def logout():
     logout_user()
     return redirect("/")
+
+# все чаты
+@app.route("/messages/<int:user_id>", methods=["GET", "POST"])
+@login_required
+def messenger(user_id):
+    db_sess = db_session.create_session()
+    messages = db_sess.query(Chat).filter(Chat.id_of_user_1 == user_id).all()
+    local_messages = list()
+    for chat in messages:
+        elem = dict()
+        elem['user1_id'] = chat.id_of_user_1
+        elem['user2_id'] = chat.id_of_user_2
+        elem['user2_nick'] = db_sess.query(User).filter((User.id == chat.id_of_user_2 ) | (User.id == chat.id_of_user_1)).first().nick
+        r = db_sess.query(Message).filter(
+            Message.id_of_chat == chat.id).all()
+        if not r:
+            elem['user2_nick'] = ''
+            elem['last_message'] = ""
+            elem['last_message_writer'] = 'Nobody here..'
+        else:
+            r = r[-1]
+            elem['last_message'] = r.text
+            elem['last_message_writer'] = 'You' if r.id_of_user == user_id else elem['user2_nick']
+        local_messages.append(elem)
+    messages = dict()
+    messages['messages'] = local_messages
+    return render_template('messages_view.html', messages=messages)
 
 
 # чат между двумя пользователями
