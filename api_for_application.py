@@ -1,12 +1,12 @@
 from flask_restful import reqparse, abort, Api, Resource
 from flask import jsonify
-from data import db_session
+from _data import db_session
 import datetime
 
-from data.user import User
-from data.post import Post
-from data.comment import Comment
-from data.message import Message
+from _data.user import User
+from _data.post import Post
+from _data.comment import Comment
+from _data.message import Message
 
 
 # parsers

@@ -1,27 +1,38 @@
 {% extends "base.html" %}
 
 {% block block_1 %}
-<div id="ProfilePicture" class="line_disp">
-    <img src="https://i.pinimg.com/originals/55/7d/d6/557dd6dad96f28ec985dd44c5b8a16bf.jpg" class="img-thumbnail"
-         alt="..." width="200">
-</div>
+<div>
+    <div class="card" style="width: 18rem; float:right; display: inline-block;">
+        <ul class="list-group list-group-flush">
 
-<div class="line_disp">
-    <div id="UserName" class="">
-        <h1> {{ name }} </h1>
+            <li class="list-group-item"><h5>My birthday:</h5> {{ birthday }}</li>
+            <li class="list-group-item"><h5>My address:</h5> {{ address }}</li>
+            <li class="list-group-item"><h5>Im here from:</h5> {{ reg_date }}</li>
+
+        </ul>
     </div>
-    {% if user_id == current_user.id %}
-    <div id="AddPostButton" class="line_disp">
+    <div>
+        <div id="UserName" class="">
+            <h1> {{ name }} </h1>
+        </div>
+        <div class="card" style="width: 60rem;">
+            <div class="card-body">
+                <h5> {{ about }} </h5>
+            </div>
+        </div>
+    </div>
+    <br>
+    {% if user_id != current_user.id %}
+    <div id="DialogButton" class="line_disp" style="margin-left: 30px">
+        <a href="/chat/{{ user_id }},{{current_user.id}}" class="btn btn-outline-secondary">Messages</a>
+    </div>
+    {% else %}
+    <div id="AddPostButton" class="line_disp" style="margin-left: 30px">
         <a href="/user/{{ user_id }}/post/add" class="btn btn-outline-secondary">New Post...</a>
     </div>
     {% endif %}
-    {% if user_id != current_user.id %}
-        <div id="DialogButton" class="line_disp">
-            <a href="/chat/{{ user_id }},{{current_user.id}}" class="btn btn-outline-secondary">Messages</a>
-        </div>
-    {% endif %}
 </div>
-
+<br><br><br>
 {% for i in posts['posts'] %}
 <div id="Post" class="post">
     <div style="text-align: left">
@@ -39,7 +50,8 @@
     {% if i['isliked'] %}
     <button type="button" class="btn btn-danger">Liked {{ i['post_likes'] }}</button>
     {% else %}
-    <a href="/user/{{current_user.id}}/post/add_like/{{i['post_id']}}" class="btn btn-outline-secondary">Like {{ i['post_likes'] }}</a>
+    <a href="/user/{{current_user.id}}/post/add_like/{{i['post_id']}}" class="btn btn-outline-secondary">Like {{
+        i['post_likes'] }}</a>
     <br>
     {% endif %}
 </div>
